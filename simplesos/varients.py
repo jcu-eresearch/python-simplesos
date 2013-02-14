@@ -26,11 +26,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class SOSVarients:
+class SOSVariants:
     def createRangeGenerator(self, range_elements, namespaces):
         raise Exception("Not Implemented")
 
-class _52North(SOSVarients):
+class _52North(SOSVariants):
     def createRangeGenerator(self, range_elements, namespaces):
         for _range in range_elements:
             min = _range.xpath("ows:MinimumValue", namespaces=namespaces)
@@ -42,3 +42,11 @@ class _52North(SOSVarients):
             for i in range(int(min[0].text), int(max[0].text) + 1):
                 observationID = "o_%s"%i
                 yield observationID
+
+variants = {
+    "52North":_52North
+}
+def getSOSVariant(variant_name):
+    if variant_name in variants:
+        return variants[variant_name]
+    raise Exception("Unknown SOS Variant: %s"%variant_name)
