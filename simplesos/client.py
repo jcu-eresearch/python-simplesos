@@ -29,46 +29,20 @@
 import requests
 
 from lxml import etree
+from simplesos.util import create_namespace_dict, SOSVersions, get_namespaced_tag
 from simplesos.varients import _52North
-
-
-
-class SOSVersions:
-    v_1_0_0 = "1.0.0"
-    v_2_0_0 = "2.0.0"
-
-class SOSMimeTypes:
-    sensorML_1_0_1 = 'text/xml;subtype="sensorML/1.0.1"'
-    om_1_0_0 = 'text/xml;subtype="om/1.0.0"'
-
-def create_namespace_dict(default_prefix=None):
-    namespaces = {
-        "sos": "http://www.opengis.net/sos/1.0",
-        "om":"http://www.opengis.net/om/1.0",
-        "ows":"http://www.opengis.net/ows/1.1",
-        "ogc":"http://www.opengis.net/ogc",
-        "xsi":"http://www.w3.org/2001/XMLSchema-instance"
-    }
-    toRet = {}
-    for ns in namespaces:
-        if ns is default_prefix:
-            toRet[None] = namespaces[ns]
-        else:
-            toRet[ns] = namespaces[ns]
-    return toRet
+from simplesos.wrappers import Capabilities, InsertObservation
 
 class SOSClient_V1():
     __default_output_format = 'text/xml;subtype="sensorML/1.0.1"'
     namespaces = create_namespace_dict("sos")
-    def __init__(self, sos_url, varient=_52North()):
+    def __init__(self, sos_url, variant=_52North()):
         self.sos_url = sos_url
         self.version = SOSVersions.v_1_0_0
-        self.varient = varient
+        self.variant = variant
 
     def get_namespaced_tag(self, ns, tag):
-        if ns in self.namespaces:
-            return "{%s}%s"%(self.namespaces[ns], tag)
-        return "{%s}%s"%(self.namespaces[None], tag)
+        return get_namespaced_tag(ns, tag, self.namespaces)
 
     def create_GetCapabilities(self, sections):
         """
@@ -118,7 +92,7 @@ class SOSClient_V1():
                 ["OperationsMetadata","ServiceIdentification", "ServiceProvider", "Filter_Capabilities", "Contents"]),
             pretty_print=True)
         response = requests.post(self.sos_url, data=caps)
-        return etree.fromstring(response.text.encode("utf8"))
+        return Capabilities(etree.fromstring(response.text.encode("utf8")), self)
 
 
     def create_DescribeSensor(self, sensorID, outputFormat):
@@ -186,7 +160,7 @@ class SOSClient_V1():
             self.create_GetObservationByID(o_id, resultFormat),
             pretty_print=True)
         response = requests.post(self.sos_url, data=observation)
-        return etree.fromstring(response.text.encode("utf8"))
+        return InsertObservation(etree.fromstring(response.text.encode("utf8")), self)
 
 
 def usage():
