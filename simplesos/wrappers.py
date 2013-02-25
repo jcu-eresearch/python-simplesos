@@ -69,3 +69,17 @@ class Capabilities:
         if len(allowed) != 1:
             raise SOSCapabilitiesException("Excepted 1 AssignedSensorId from xpath match, found: %s"%len(allowed))
         return [x.text for x in allowed[0].xpath("ows:Value", namespaces=self.namespaces)]
+
+    def getXMLString(self):
+        return etree.tostring(self.caps, pretty_print=True)
+
+
+class SensorML:
+    def __init__(self, sensorML, client):
+        self.namespaces = create_namespace_dict()
+        self.sensorML = sensorML
+        self.client = client
+
+    def getXMLString(self):
+        return etree.tostring(self.sensorML, pretty_print=True)
+

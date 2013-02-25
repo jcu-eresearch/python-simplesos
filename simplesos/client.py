@@ -31,7 +31,7 @@ import requests
 from lxml import etree
 from simplesos.util import create_namespace_dict, SOSVersions, get_namespaced_tag
 from simplesos.varients import _52North
-from simplesos.wrappers import Capabilities, InsertObservation
+from simplesos.wrappers import Capabilities, InsertObservation, SensorML
 
 class SOSClient_V1():
     __default_output_format = 'text/xml;subtype="sensorML/1.0.1"'
@@ -127,7 +127,7 @@ class SOSClient_V1():
             self.create_DescribeSensor(sensorID, outputFormat),
             pretty_print=True)
         response = requests.post(self.sos_url, data=caps)
-        return etree.fromstring(response.text.encode("utf8"))
+        return SensorML(etree.fromstring(response.text.encode("utf8")), self)
 
     def create_GetObservationByID(self, o_id, resultFormat="om:Measurement"):
         """
